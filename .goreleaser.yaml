@@ -14,9 +14,7 @@ builds:
       - linux
       - windows
       - darwin
-  - ldflags:
-      - -s -w -X main.build={{.Version}}
-      - ./usemsan=-msan
+    ldflags: "-X main.buildVersion={{.Version}}"
 
 archives:
   - format: tar.gz
