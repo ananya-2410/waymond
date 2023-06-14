@@ -45,7 +45,7 @@ func main() {
 	}
 
 	if version != "" {
-		fmt.Println(version)
+		fmt.Println(buildVersion)
 		os.Exit(0)
 	}
 
