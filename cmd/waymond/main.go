@@ -27,11 +27,28 @@ import (
 var configPath string
 var k = koanf.New(".")
 var corelog = log.New("waymond.core")
+var version string
+
+// buildVersion holds the value of the version provided at build time
+var buildVersion string
 
 func main() {
 	// set command line flags
+	help := flag.Bool("help", false, "Print usage information")
+	flag.StringVar(&version, "version", "", "Print version information")
 	flag.StringVar(&configPath, "config", "", "file path to waymond config file (.toml)")
 	flag.Parse()
+
+	if *help {
+		printHelp()
+		return
+	}
+
+	if version != "" {
+		fmt.Println(buildVersion)
+		os.Exit(0)
+	}
+
 	if configPath == "" {
 		configPath = "waymond.toml"
 	}
@@ -225,4 +242,15 @@ func main() {
 	corelog.Verbose("press CTRL+C if you would like to quit")
 	<-done
 	corelog.Verbose("stopped waymond")
+}
+
+func printHelp() {
+	helpText := "waymond - Autoscale Anything Anywhere All at once! \n\n Available flags:\n"
+
+	flag.VisitAll(func(f *flag.Flag) {
+		helpText += fmt.Sprintf("-%s: %s\n", f.Name, f.Usage)
+	})
+
+	fmt.Println(helpText)
+	os.Exit(0)
 }
