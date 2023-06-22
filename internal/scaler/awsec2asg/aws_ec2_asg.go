@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -318,6 +319,11 @@ func (s *Scaler) Register(ctx context.Context) error {
 			asg := asgOutput.AutoScalingGroups[0]
 
 			var updateAsg *autoscaling.UpdateAutoScalingGroupInput
+
+			desiredCapacity := int64(math.Min(
+				math.Max(float64(*asg.MinSize), float64(inputData.DesiredCount)),
+				float64(*asg.MaxSize)))
+
 			if *asg.DesiredCapacity < inputData.DesiredCount {
 				// scale-out
 				if s.DisableScaleOut != nil && *s.DisableScaleOut {
@@ -326,7 +332,7 @@ func (s *Scaler) Register(ctx context.Context) error {
 
 				updateAsg = &autoscaling.UpdateAutoScalingGroupInput{
 					AutoScalingGroupName: &inputData.ASGName,
-					DesiredCapacity:      &inputData.DesiredCount,
+					DesiredCapacity:      &desiredCapacity,
 				}
 			} else if *asg.DesiredCapacity > inputData.DesiredCount {
 				// scale-in
@@ -336,7 +342,7 @@ func (s *Scaler) Register(ctx context.Context) error {
 
 				updateAsg = &autoscaling.UpdateAutoScalingGroupInput{
 					AutoScalingGroupName: &inputData.ASGName,
-					DesiredCapacity:      &inputData.DesiredCount,
+					DesiredCapacity:      &desiredCapacity,
 				}
 			}
 
